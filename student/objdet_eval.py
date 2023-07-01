@@ -72,8 +72,7 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
 
                 ## step 6 : if IOU exceeds min_iou threshold, store [iou,dist_x, dist_y, dist_z] in matches_lab_det and increase the TP count
                 if iou >= min_iou:
-                    ious.append(iou)
-                    center_devs.append([dist_x, dist_y, dist_z])
+                    matches_lab_det.append([iou, dist_x, dist_y, dist_z])
                     true_positives += 1
 
             #######
