@@ -66,6 +66,7 @@ def load_configs_model(model_name='darknet', configs=None):
         configs.arch = 'fpn_resnet'
 
         configs.conf_thresh = 0.5
+        configs.nms_thresh = 0.4
 
         configs.pin_memory = True
         configs.distributed = False  # For testing on 1 GPU only
@@ -201,6 +202,16 @@ def detect_objects(input_bev_maps, model, configs):
             #######
             print("student task ID_S3_EX1-5")
             print(outputs)
+            output_post = post_processing_v2(outputs, conf_thresh=configs.conf_thresh, nms_thresh=configs.nms_thresh)
+            detections = []
+            for sample_i in range(len(output_post)):
+                if output_post[sample_i] is None:
+                    continue
+                detection = output_post[sample_i]
+                for obj in detection:
+                    x, y, w, l, im, re, _, _, _ = obj
+                    yaw = np.arctan2(im, re)
+                    detections.append([1, x, y, 0.0, 1.50, w, l, yaw])
 
             #######
             ####### ID_S3_EX1-5 END #######
