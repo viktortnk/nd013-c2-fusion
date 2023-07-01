@@ -25,6 +25,7 @@ sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 # model-related
 from tools.objdet_models.resnet.models import fpn_resnet
 from tools.objdet_models.resnet.utils.evaluation_utils import decode, post_processing
+from tools.objdet_models.resnet.utils.torch_utils import _sigmoid
 
 from tools.objdet_models.darknet.models.darknet2pytorch import Darknet as darknet
 from tools.objdet_models.darknet.utils.evaluation_utils import post_processing_v2
@@ -65,8 +66,11 @@ def load_configs_model(model_name='darknet', configs=None):
         configs.pretrained_filename = os.path.join(configs.model_path, 'pretrained', 'fpn_resnet_18_epoch_300.pth')
         configs.arch = 'fpn_resnet'
 
+        configs.K = 50
+
         configs.conf_thresh = 0.5
         configs.nms_thresh = 0.4
+        configs.peak_thresh = 0.2
 
         configs.pin_memory = True
         configs.distributed = False  # For testing on 1 GPU only
@@ -201,17 +205,22 @@ def detect_objects(input_bev_maps, model, configs):
             ####### ID_S3_EX1-5 START #######
             #######
             print("student task ID_S3_EX1-5")
-            print(outputs)
-            output_post = post_processing_v2(outputs, conf_thresh=configs.conf_thresh, nms_thresh=configs.nms_thresh)
+            outputs['hm_cen'] = _sigmoid(outputs['hm_cen'])
+            outputs['cen_offset'] = _sigmoid(outputs['cen_offset'])
+
+            detections0 = decode(outputs['hm_cen'], outputs['cen_offset'], outputs['direction'], outputs['z_coor'],
+                                outputs['dim'], K=configs.K)
+
+            detections0 = detections0.cpu().numpy().astype(np.float32)
+            detections0 = post_processing(detections0, configs)
+            detections0 = detections0[0] # first batch
+
             detections = []
-            for sample_i in range(len(output_post)):
-                if output_post[sample_i] is None:
-                    continue
-                detection = output_post[sample_i]
-                for obj in detection:
-                    x, y, w, l, im, re, _, _, _ = obj
-                    yaw = np.arctan2(im, re)
-                    detections.append([1, x, y, 0.0, 1.50, w, l, yaw])
+            car_class_id = 1
+            if len(detections0[car_class_id]) > 0:
+                for det in detections0[car_class_id]:
+                    # (scores-0:1, x-1:2, y-2:3, z-3:4, dim(h,w,l)-4:7, yaw-7:8)
+                    detections.append([car_class_id]+det.tolist()[1:])
 
             #######
             ####### ID_S3_EX1-5 END #######
@@ -225,12 +234,19 @@ def detect_objects(input_bev_maps, model, configs):
     objects = []
 
     ## step 1 : check whether there are any detections
-
+    if detections:
         ## step 2 : loop over all detections
-
+        for det in detections:
             ## step 3 : perform the conversion using the limits for x, y and z set in the configs structure
+            _, bev_x, bev_y, z, h, bev_w, bev_l, yaw = det
+            x = bev_y / configs.bev_height * (configs.lim_x[1] - configs.lim_x[0])
+            y = bev_x / configs.bev_width * (configs.lim_y[1] - configs.lim_y[0]) - (configs.lim_y[1] - configs.lim_y[0])/2.0
+            w = bev_w / configs.bev_width * (configs.lim_y[1] - configs.lim_y[0])
+            l = bev_l / configs.bev_height * (configs.lim_x[1] - configs.lim_x[0])
 
             ## step 4 : append the current object to the 'objects' array
+            obj = [1, x, y, z, h, w, l, yaw]
+            objects.append(obj)
 
     #######
     ####### ID_S3_EX2 START #######
