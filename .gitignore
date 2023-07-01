@@ -1,0 +1,8 @@
+__pycache__/
+.DS_Store
+*.egg
+*.egg-info/
+tools/objdet_models/darknet/pretrained/
+tools/objdet_models/resnet/pretrained/
+dataset/*.tfrecord
+results/*.pkl
