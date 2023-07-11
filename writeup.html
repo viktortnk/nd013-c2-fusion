@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Writeup&colon; Track 3D-Objects Over Time</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <h1 id="writeup-track-3d-objects-over-time">Writeup: Track 3D-Objects Over Time</h1>
+<p>Please use this starter template to answer the following questions:</p>
+<h3 id="1-write-a-short-recap-of-the-four-tracking-steps-and-what-you-implemented-there-filter-track-management-association-camera-fusion-which-results-did-you-achieve-which-part-of-the-project-was-most-difficult-for-you-to-complete-and-why">1. Write a short recap of the four tracking steps and what you implemented there (filter, track management, association, camera fusion). Which results did you achieve? Which part of the project was most difficult for you to complete, and why?</h3>
+<ul>
+<li>implemented a EKF filter with it's predict() and and update() functions, with all neccessary matrices.</li>
+<li>implemented proper track initialization based on data coming from sensor. added mechanism to manange tracks and their states.</li>
+<li>implemented nearest-neighbour mechanism through association-matrix filled with MHD distances.</li>
+<li>implemented camera sensor functionality. Including checking whether the object is in a field of view, transforming vehicle to image coordinates</li>
+</ul>
+<h3 id="2-do-you-see-any-benefits-in-camera-lidar-fusion-compared-to-lidar-only-tracking-in-theory-and-in-your-concrete-results">2. Do you see any benefits in camera-lidar fusion compared to lidar-only tracking (in theory and in your concrete results)?</h3>
+<p>There is a benefit of using camera in addition to lidar sensors. Lidar has lower quality detecting black objects consuming light and we can often get higher quality object detection from images</p>
+<p>Aside from tracking, we can use computer-vision techniques which would be available only for image. Signs recognition, reading traffic lights</p>
+<p>Below are the projects concrete results (RMSE) for lidar-only detection followed with camera-lidar fusion</p>
+<p><img src="file:////Users/viktortnk/code/python/nd013-c2-fusion-starter/images/step3_association_rmse.png" alt="lidar-only"></p>
+<p><img src="file:////Users/viktortnk/code/python/nd013-c2-fusion-starter/images/step4_fusion_rmse.png" alt="lidar-camera-fusion" title="image"></p>
+<h3 id="3-which-challenges-will-a-sensor-fusion-system-face-in-real-life-scenarios-did-you-see-any-of-these-challenges-in-the-project">3. Which challenges will a sensor fusion system face in real-life scenarios? Did you see any of these challenges in the project?</h3>
+<p>Sensors could be affected by environment conditions (rain, fog, etc.).</p>
+<p>Optical occlusions might occur. Vehicles can be hidden from time to time.</p>
+<p>Road vibrations could affect sensors accuracy, where calibration could become inaccurate.</p>
+<h3 id="4-can-you-think-of-ways-to-improve-your-tracking-results-in-the-future">4. Can you think of ways to improve your tracking results in the future?</h3>
+<ul>
+<li>
+<p>fine tune parameters and see how RMSE can be affected.</p>
+</li>
+<li>
+<p>use computer-vision - based camera detections and use it in tracking.</p>
+</li>
+<li>
+<p>use more advanced data association mechanism, such as Joint Probabilistic Data Association (JPDA)</p>
+</li>
+<li>
+<p>apply real-world physical model for vehicles, which could refine their predictions and reduce uncertainly</p>
+</li>
+</ul>
+
+        
+        
+    </body>
+    </html>
